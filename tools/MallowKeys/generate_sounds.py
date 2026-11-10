@@ -18,7 +18,7 @@ import wave
 
 import numpy as np
 
-SR = 44100
+SR = 48000
 
 
 def one_pole_lowpass(x: np.ndarray, cutoff: float) -> np.ndarray:

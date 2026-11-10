@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Media;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -18,8 +17,8 @@ using Microsoft.Win32;
 [assembly: System.Reflection.AssemblyDescription("System-wide switch sounds for Mallow 68")]
 [assembly: System.Reflection.AssemblyCompany("Mallow 68")]
 [assembly: System.Reflection.AssemblyProduct("MallowKeys")]
-[assembly: System.Reflection.AssemblyVersion("1.0.0.0")]
-[assembly: System.Reflection.AssemblyFileVersion("1.0.0.0")]
+[assembly: System.Reflection.AssemblyVersion("1.0.1.0")]
+[assembly: System.Reflection.AssemblyFileVersion("1.0.1.0")]
 
 namespace MallowKeys
 {
@@ -312,7 +311,7 @@ namespace MallowKeys
 
         internal string StateJson()
         {
-            return "{\"app\":\"MallowKeys\",\"version\":\"1.0.0\",\"enabled\":"
+            return "{\"app\":\"MallowKeys\",\"version\":\"1.0.1\",\"enabled\":"
                 + (enabled ? "true" : "false")
                 + ",\"mode\":\"" + mode + "\",\"global\":true}";
         }
@@ -431,7 +430,22 @@ namespace MallowKeys
     internal sealed class SoundLibrary : IDisposable
     {
         internal static readonly string[] Modes = new string[] { "red", "brown", "blue", "thock", "clack" };
-        private readonly Dictionary<string, List<SoundPlayer>> pools = new Dictionary<string, List<SoundPlayer>>();
+        private const uint SND_ASYNC = 0x0001;
+        private const uint SND_NODEFAULT = 0x0002;
+        private const uint SND_MEMORY = 0x0004;
+        private const uint SND_PURGE = 0x0040;
+
+        [DllImport("winmm.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool PlaySound(IntPtr sound, IntPtr module, uint flags);
+
+        private sealed class PinnedWav
+        {
+            internal GCHandle Handle;
+            internal IntPtr Pointer;
+        }
+
+        private readonly Dictionary<string, List<PinnedWav>> pools = new Dictionary<string, List<PinnedWav>>();
         private readonly Random random = new Random();
         private readonly object sync = new object();
 
@@ -440,22 +454,22 @@ namespace MallowKeys
             if (!Directory.Exists(soundsDirectory)) return;
             foreach (string id in Modes)
             {
-                List<SoundPlayer> list = new List<SoundPlayer>();
+                List<PinnedWav> list = new List<PinnedWav>();
                 string[] files = Directory.GetFiles(soundsDirectory, id + "-*.wav");
                 Array.Sort(files, StringComparer.OrdinalIgnoreCase);
                 foreach (string file in files)
                 {
-                    for (int copy = 0; copy < 3; copy++)
+                    try
                     {
-                        try
-                        {
-                            SoundPlayer player = new SoundPlayer(file);
-                            player.Load();
-                            list.Add(player);
-                        }
-                        catch
-                        {
-                        }
+                        byte[] bytes = File.ReadAllBytes(file);
+                        GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                        PinnedWav sample = new PinnedWav();
+                        sample.Handle = handle;
+                        sample.Pointer = handle.AddrOfPinnedObject();
+                        list.Add(sample);
+                    }
+                    catch
+                    {
                     }
                 }
                 if (list.Count > 0)
@@ -491,23 +505,23 @@ namespace MallowKeys
         internal void Play(string id)
         {
             string safeMode = NormalizeMode(id);
-            List<SoundPlayer> list;
+            List<PinnedWav> list;
             if (!pools.TryGetValue(safeMode, out list) || list.Count == 0) return;
-            SoundPlayer player;
+            PinnedWav sample;
             lock (sync)
             {
-                player = list[random.Next(list.Count)];
+                sample = list[random.Next(list.Count)];
             }
-            ThreadPool.QueueUserWorkItem(delegate
+            // SND_MEMORY + SND_ASYNC starts immediately from pinned RAM.
+            // It also stops the previous sample, which keeps the onset locked
+            // to the newest key instead of falling behind during fast typing.
+            try
             {
-                try
-                {
-                    player.Play();
-                }
-                catch
-                {
-                }
-            });
+                PlaySound(sample.Pointer, IntPtr.Zero, SND_ASYNC | SND_NODEFAULT | SND_MEMORY);
+            }
+            catch
+            {
+            }
         }
 
         internal void PlayPreview(string id)
@@ -517,13 +531,20 @@ namespace MallowKeys
 
         public void Dispose()
         {
-            foreach (List<SoundPlayer> list in pools.Values)
+            try
             {
-                foreach (SoundPlayer player in list)
+                PlaySound(IntPtr.Zero, IntPtr.Zero, SND_PURGE);
+            }
+            catch
+            {
+            }
+            foreach (List<PinnedWav> list in pools.Values)
+            {
+                foreach (PinnedWav sample in list)
                 {
                     try
                     {
-                        player.Dispose();
+                        if (sample.Handle.IsAllocated) sample.Handle.Free();
                     }
                     catch
                     {

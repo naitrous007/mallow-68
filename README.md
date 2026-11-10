@@ -44,7 +44,7 @@ For sounds while typing in Word, Discord, a game, or anywhere else, download the
 **MallowKeys** tray companion:
 
 - In the website: open the sound picker and choose **Get app**.
-- In this repository: [`public/downloads/MallowKeys.zip`](public/downloads/MallowKeys.zip).
+- In this repository: [`public/downloads/MallowKeys-1.0.1.zip`](public/downloads/MallowKeys-1.0.1.zip).
 
 Extract the ZIP, keep `MallowKeys.exe` and the `sounds` folder together, and run the
 EXE. It lives in the Windows system tray. Right-click the pink keycap icon to switch
@@ -60,6 +60,13 @@ MallowKeys:
 - never saves typed text;
 - never sends keystrokes over the network;
 - only uses the local bridge to exchange sound settings.
+
+Version 1.0.1 uses direct pinned-memory playback (`PlaySound` with `SND_MEMORY | SND_ASYNC`)
+instead of `SoundPlayer`, so the newest key starts immediately even during fast typing. If
+you still hear a delay, check that Windows is using wired headphones/speakers (Bluetooth
+can add 100–300 ms), and disable "Audio enhancements" / spatial audio for the output device.
+When updating, extract the new ZIP into a fresh folder rather than mixing it with an older
+copy.
 
 The full source is in [`tools/MallowKeys`](tools/MallowKeys). Rebuild the portable
 package with:
@@ -115,4 +122,4 @@ on some HTTPS deployments), the tray menu still works independently.
 - `src/audio.js` — the browser Web Audio synth.
 - `src/desktopBridge.js` — detection and setting sync for MallowKeys.
 - `tools/MallowKeys/` — the Windows tray companion source, sounds, and build script.
-- `public/downloads/MallowKeys.zip` — the downloadable tray app.
+- `public/downloads/MallowKeys-1.0.1.zip` — the downloadable tray app.

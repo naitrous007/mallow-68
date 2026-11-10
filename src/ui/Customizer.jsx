@@ -207,7 +207,7 @@ export function Customizer() {
                 ) : (
                   <a
                     className="companion-download"
-                    href="downloads/MallowKeys.zip"
+                    href="downloads/MallowKeys-1.0.1.zip"
                     download
                     title="Download MallowKeys for Windows"
                   >

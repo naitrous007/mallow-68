@@ -1,7 +1,7 @@
 MALLOWKEYS
 ==========
 System-wide switch sounds for Mallow 68
-Version 1.0.0
+Version 1.0.1
 
 WHAT IT DOES
 ------------
@@ -45,6 +45,10 @@ Windows 10 or Windows 11.
 NOTES
 -----
 - MallowKeys does not block or alter keystrokes; it only listens and plays audio.
+- Version 1.0.1 plays directly from pinned memory through the Windows low-latency
+  waveOut path, so rapid typing starts each sound immediately. If you still hear
+  lag, use wired headphones/speakers (Bluetooth adds 100–300 ms) and turn off
+  audio enhancements or spatial sound for that device.
 - Some elevated applications may not send keys to a normal-privilege app because
   of Windows security boundaries.
 - The Mallow 68 website also has browser-only sounds. When MallowKeys is running,

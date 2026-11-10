@@ -9,7 +9,7 @@ $sounds = Join-Path $here "sounds"
 $icon = Join-Path $here "app.ico"
 $exe = Join-Path $here "MallowKeys.exe"
 $downloadDir = Join-Path $repo "public\downloads"
-$zip = Join-Path $downloadDir "MallowKeys.zip"
+$zip = Join-Path $downloadDir "MallowKeys-1.0.1.zip"
 
 $cscCandidates = @(
     (Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"),

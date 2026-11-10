@@ -134,7 +134,7 @@ export function SoundPicker() {
                 </span>
                 <a
                   className="desktop-download-button"
-                  href="downloads/MallowKeys.zip"
+                  href="downloads/MallowKeys-1.0.1.zip"
                   download
                   title="Download MallowKeys for Windows"
                 >
