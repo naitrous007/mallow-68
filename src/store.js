@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { DEFAULT_SOUND } from "./soundProfiles";
 
 export const useMallow = create(
   persist(
@@ -11,9 +12,11 @@ export const useMallow = create(
       themeId: "strawberry",
       caseColorId: "blush",
       soundEnabled: true,
-      soundMode: "thock",
+      soundMode: DEFAULT_SOUND,
       customizerOpen: false,
       hasInteracted: false,
+      desktopConnected: false,
+      desktopVersion: "",
 
       setExplode: (value) => {
         const explode = Math.min(1, Math.max(0, value));
@@ -61,6 +64,15 @@ export const useMallow = create(
       setSoundMode: (soundMode) => {
         set({ soundMode });
         document.dispatchEvent(new CustomEvent("mallow:audio-unlock"));
+      },
+      setDesktopConnected: (desktopConnected, desktopVersion = "") => {
+        if (
+          get().desktopConnected === desktopConnected &&
+          get().desktopVersion === desktopVersion
+        ) {
+          return;
+        }
+        set({ desktopConnected, desktopVersion });
       },
       toggleCustomizer: () => set({ customizerOpen: !get().customizerOpen }),
       setCustomizer: (customizerOpen) => set({ customizerOpen }),

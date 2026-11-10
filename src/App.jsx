@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { CASE_BY_ID, THEME_BY_ID } from "./data";
 import { useMallow } from "./store";
 import { unlockAudio } from "./audio";
+import { startDesktopBridge } from "./desktopBridge";
 import { Experience } from "./three/Experience";
 import { TopBar } from "./ui/TopBar";
 import { LayerPanel } from "./ui/LayerPanel";
@@ -30,6 +31,8 @@ export default function App() {
       window.removeEventListener("keydown", unlock);
     };
   }, []);
+
+  useEffect(() => startDesktopBridge(), []);
 
   return (
     <main
@@ -61,6 +64,8 @@ export default function App() {
       <ExplodeDock />
       <Customizer />
       <FloatingHints />
+
+      <div id="overlay-root" />
 
       <div className="corner-note" aria-hidden="true">
         <span>softly mechanical</span>

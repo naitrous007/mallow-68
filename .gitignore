@@ -3,5 +3,8 @@ dist
 .npm-cache
 .chrome-*
 shots
+qa
+.test-download
+tools/MallowKeys/icon-preview.png
 .env
 *.log

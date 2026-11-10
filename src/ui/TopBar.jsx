@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Palette, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useMallow } from "../store";
-import { playKey, unlockAudio } from "../audio";
+import { unlockAudio } from "../audio";
+import { previewSound } from "../desktopBridge";
+import { SoundPicker } from "./SoundPicker";
 
 function PressPulse() {
   const [pressed, setPressed] = useState(null);
@@ -12,7 +14,7 @@ function PressPulse() {
     const onKey = (event) => {
       setPressed({ ...event.detail, stamp: Date.now() });
       if (timer.current) window.clearTimeout(timer.current);
-      timer.current = window.setTimeout(() => setPressed(null), 900);
+      timer.current = window.setTimeout(() => setPressed(null), 1100);
     };
     document.addEventListener("mallow:key", onKey);
     return () => {
@@ -58,10 +60,8 @@ function PressPulse() {
 
 export function TopBar() {
   const soundEnabled = useMallow((state) => state.soundEnabled);
-  const soundMode = useMallow((state) => state.soundMode);
   const customizerOpen = useMallow((state) => state.customizerOpen);
   const toggleSound = useMallow((state) => state.toggleSound);
-  const setSoundMode = useMallow((state) => state.setSoundMode);
   const toggleCustomizer = useMallow((state) => state.toggleCustomizer);
 
   const handleSound = () => {
@@ -69,16 +69,9 @@ export function TopBar() {
     const wasEnabled = soundEnabled;
     toggleSound();
     if (!wasEnabled) {
-      window.setTimeout(() => playKey(soundMode), 60);
-    }
-  };
-
-  const handleMode = (mode) => {
-    if (mode === soundMode) return;
-    unlockAudio();
-    setSoundMode(mode);
-    if (soundEnabled) {
-      window.setTimeout(() => playKey(mode, 0.8), 30);
+      window.setTimeout(() => {
+        previewSound(useMallow.getState().soundMode);
+      }, 90);
     }
   };
 
@@ -118,21 +111,7 @@ export function TopBar() {
         </button>
 
         <span className="toolbar-divider" aria-hidden="true" />
-
-        <div className="sound-modes" role="group" aria-label="Key sound style">
-          {["thock", "clack"].map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              className={soundMode === mode ? "active" : ""}
-              onClick={() => handleMode(mode)}
-              aria-pressed={soundMode === mode}
-            >
-              {mode}
-            </button>
-          ))}
-        </div>
-
+        <SoundPicker />
         <span className="toolbar-divider" aria-hidden="true" />
 
         <button

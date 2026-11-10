@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { KEYS, KEY_BY_CODE, KEY_GAP, BOARD_Y, THEME_BY_ID, keyColor } from "../data";
 import { useMallow } from "../store";
 import { playKey, unlockAudio } from "../audio";
+import { previewSound } from "../desktopBridge";
 import { createKeycapGeometry } from "./geometry";
 import { getKeyLabelAtlas, makeLabelPlaneGeometry } from "./textures";
 
@@ -109,7 +110,7 @@ export function Keycaps() {
       const state = useMallow.getState();
       state.markInteracted();
       unlockAudio();
-      if (state.soundEnabled) playKey(state.soundMode);
+      if (state.soundEnabled && !state.desktopConnected) playKey(state.soundMode);
       emitKey(key);
     };
 
@@ -162,7 +163,7 @@ export function Keycaps() {
     state.setLayer("keycaps");
     state.markInteracted();
     unlockAudio();
-    if (state.soundEnabled) playKey(state.soundMode, 0.95);
+    if (state.soundEnabled) previewSound(state.soundMode);
     emitKey(key);
   };
 

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Palette, Shuffle, X } from "lucide-react";
+import { Check, Download, Monitor, Palette, Shuffle, Volume2, X } from "lucide-react";
 import { CASE_COLORS, THEMES } from "../data";
 import { useMallow } from "../store";
 import { playPop, unlockAudio } from "../audio";
@@ -12,6 +12,8 @@ export function Customizer() {
   const setTheme = useMallow((state) => state.setTheme);
   const setCaseColor = useMallow((state) => state.setCaseColor);
   const soundEnabled = useMallow((state) => state.soundEnabled);
+  const desktopConnected = useMallow((state) => state.desktopConnected);
+  const desktopVersion = useMallow((state) => state.desktopVersion);
   const currentTheme = THEMES.find((theme) => theme.id === themeId) || THEMES[0];
 
   const pop = () => {
@@ -168,6 +170,51 @@ export function Customizer() {
                     </button>
                   );
                 })}
+              </div>
+            </section>
+
+            <section className="customizer-section">
+              <div className="section-title">
+                <h3>Use it everywhere</h3>
+                <span>Windows companion</span>
+              </div>
+              <div className={`companion-card ${desktopConnected ? "is-connected" : ""}`}>
+                <span className="companion-icon">
+                  {desktopConnected ? <Volume2 size={16} /> : <Monitor size={16} />}
+                </span>
+                <div className="companion-copy">
+                  {desktopConnected ? (
+                    <>
+                      <strong>
+                        System-wide sounds are on <i className="companion-live-dot" />
+                      </strong>
+                      <small>
+                        MallowKeys v{desktopVersion || "1.0"} is in your tray. Type in any app.
+                      </small>
+                    </>
+                  ) : (
+                    <>
+                      <strong>Type outside this browser</strong>
+                      <small>
+                        Download the tiny tray app for switch sounds across Windows. No keystrokes
+                        are logged or sent.
+                      </small>
+                    </>
+                  )}
+                </div>
+                {desktopConnected ? (
+                  <span className="companion-state">live</span>
+                ) : (
+                  <a
+                    className="companion-download"
+                    href="downloads/MallowKeys.zip"
+                    download
+                    title="Download MallowKeys for Windows"
+                  >
+                    <Download size={12} />
+                    Windows
+                  </a>
+                )}
               </div>
             </section>
 
